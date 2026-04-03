@@ -4,13 +4,17 @@ describe('SessionsGateway', () => {
   let gateway: SessionsGateway;
   let emit: jest.Mock;
   let to: jest.Mock;
+  let join: jest.Mock;
+  let client: { join: jest.Mock };
 
   beforeEach(() => {
     emit = jest.fn();
     to = jest.fn().mockReturnValue({ emit });
+    join = jest.fn();
 
     gateway = new SessionsGateway();
     gateway.server = { to } as never;
+    client = { join };
   });
 
   it('broadcasts session updates', () => {
@@ -31,5 +35,19 @@ describe('SessionsGateway', () => {
 
     expect(to).toHaveBeenCalledWith('ABC123');
     expect(emit).toHaveBeenCalledWith('session.deleted', { code: 'ABC123' });
+  });
+
+  it('subscribes clients to uppercased session rooms', () => {
+    const result = gateway.handleSubscribe(client as never, {
+      sessionCode: 'abc123'
+    });
+
+    expect(join).toHaveBeenCalledWith('ABC123');
+    expect(result).toEqual({
+      event: 'session.subscribed',
+      data: {
+        sessionCode: 'ABC123'
+      }
+    });
   });
 });

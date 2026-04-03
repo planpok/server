@@ -81,4 +81,31 @@ describe('SessionsController', () => {
       })
     ).toThrow('Card is not allowed in this session deck.');
   });
+
+  it('emits the right gateway event when a participant leaves', () => {
+    const emitUpdatedSpy = jest.spyOn(gateway, 'emitSessionUpdated').mockImplementation();
+    const emitDeletedSpy = jest.spyOn(gateway, 'emitSessionDeleted').mockImplementation();
+
+    const created = controller.create({
+      name: 'Alice',
+      deck: ['1', '2', '3']
+    });
+    const joined = controller.join(created.session.code, {
+      name: 'Bob'
+    });
+
+    const result = controller.leave(created.session.code, {
+      participantId: joined.participantId
+    });
+
+    expect(result).toEqual({ deleted: false });
+    expect(emitUpdatedSpy).toHaveBeenCalledTimes(3);
+    expect(emitDeletedSpy).not.toHaveBeenCalled();
+
+    controller.leave(created.session.code, {
+      participantId: created.participantId
+    });
+
+    expect(emitDeletedSpy).toHaveBeenCalledWith(created.session.code);
+  });
 });
