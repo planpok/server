@@ -1,21 +1,21 @@
 # Poker Planning Backend (NestJS)
 
-API backend du projet Poker Planning, construite avec NestJS et TypeScript.
+Backend API for the Poker Planning project, built with NestJS and TypeScript.
 
-## Prerequis
+## Prerequisites
 
-- Node.js 22 (recommande, aligne avec la CI GitHub Actions)
+- Node.js 22 (recommended, aligned with GitHub Actions CI)
 - npm 10+
 
 ## Installation
 
-Depuis ce dossier (`server/`) :
+From this directory (`server/`):
 
 ```bash
 npm ci
 ```
 
-Alternative en local si besoin :
+Local alternative if needed:
 
 ```bash
 npm install
@@ -23,33 +23,33 @@ npm install
 
 ## Configuration
 
-Le backend utilise une variable d'environnement:
+The backend uses one environment variable:
 
-- `PORT` (optionnelle): port HTTP de l'API. Defaut: `3000`
+- `PORT` (optional): API HTTP port. Default: `3000`
 
-Exemple:
+Example:
 
 ```bash
 PORT=3000
 ```
 
-Les routes HTTP sont exposees sous le prefixe global `/api`.
-La documentation Swagger est disponible sur `/api/docs`.
+HTTP routes are exposed under the global `/api` prefix.
+Swagger documentation is available at `/api/docs`.
 
-## Lancement
+## Run
 
-### Mode developpement (watch)
+### Development mode (watch)
 
 ```bash
 npm run start:dev
 ```
 
-Puis ouvrir:
+Then open:
 
 - API: `http://localhost:3000/api`
 - Swagger: `http://localhost:3000/api/docs`
 
-### Mode production (build + start)
+### Production mode (build + start)
 
 ```bash
 npm run build
@@ -58,7 +58,7 @@ npm run start
 
 ## Tests
 
-Lancer tous les tests:
+Run all tests:
 
 ```bash
 npm test
@@ -70,31 +70,31 @@ Mode watch:
 npm run test:watch
 ```
 
-Rapport de couverture:
+Coverage report:
 
 ```bash
 npm run test:cov
 ```
 
-En CI, les tests sont executes via:
+In CI, tests are executed with:
 
 ```bash
 npm test -- --ci
 ```
 
-## Commandes utiles
+## Useful Commands
 
 ```bash
-# Installer les dependances
+# Install dependencies
 npm ci
 
-# Developpement
+# Development
 npm run start:dev
 
 # Build TypeScript
 npm run build
 
-# Demarrer le build compile
+# Start compiled build
 npm run start
 
 # Tests
@@ -103,34 +103,34 @@ npm run test:watch
 npm run test:cov
 ```
 
-## Apercu API
+## API Overview
 
-Base URL locale:
+Local base URL:
 
 ```text
 http://localhost:3000/api
 ```
 
-Endpoints REST principaux:
+Main REST endpoints:
 
-- `POST /sessions` creer une session
-- `POST /sessions/:code/join` rejoindre une session
-- `GET /sessions/:code` recuperer l'etat d'une session
-- `POST /sessions/:code/vote` voter
-- `POST /sessions/:code/reveal` reveler les votes (owner)
-- `POST /sessions/:code/reset` reset un tour (owner)
-- `POST /sessions/:code/leave` quitter une session
+- `POST /sessions` create a session
+- `POST /sessions/:code/join` join a session
+- `GET /sessions/:code` get session state
+- `POST /sessions/:code/vote` submit a vote
+- `POST /sessions/:code/reveal` reveal votes (owner)
+- `POST /sessions/:code/reset` reset a round (owner)
+- `POST /sessions/:code/leave` leave a session
 
 WebSocket (Socket.IO):
 
-- Event entrant: `session.subscribe` avec `{ "sessionCode": "ABC123" }`
-- Event sortant: `session.subscribed`
+- Incoming event: `session.subscribe` with `{ "sessionCode": "ABC123" }`
+- Outgoing event: `session.subscribed`
 - Broadcast: `session.updated`
 - Broadcast: `session.deleted`
 
 ## Docker
 
-Un `Dockerfile` est fourni dans ce dossier. Depuis la racine du monorepo, vous pouvez aussi lancer l'application complete avec:
+A `Dockerfile` is provided in this directory. From the monorepo root, you can also start the full application with:
 
 ```bash
 docker compose up --build
