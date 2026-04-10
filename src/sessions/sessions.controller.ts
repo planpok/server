@@ -16,9 +16,11 @@ import {
 } from '@nestjs/swagger';
 
 import { CreateSessionDto } from './dto/create-session.dto';
+import { JoinGroupDto } from './dto/join-group.dto';
 import { JoinSessionDto } from './dto/join-session.dto';
 import { LeaveSessionDto } from './dto/leave-session.dto';
 import { OwnerActionDto } from './dto/owner-action.dto';
+import { RevealActionDto } from './dto/reveal-action.dto';
 import {
   LeaveSessionResponseDto,
   SessionParticipantResponseDto,
@@ -41,7 +43,7 @@ export class SessionsController {
   @ApiCreatedResponse({ type: SessionParticipantResponseDto })
   @ApiBadRequestResponse({ description: 'Invalid participant name or deck.' })
   create(@Body() dto: CreateSessionDto): SessionParticipantResponseDto {
-    const result = this.sessionsService.createSession(dto.name, dto.deck);
+    const result = this.sessionsService.createSession(dto.name, dto.deck, dto.groups ?? []);
     this.sessionsGateway.emitSessionUpdated(result.session.code, result.session);
     return result;
   }
@@ -55,9 +57,19 @@ export class SessionsController {
     @Param('code') code: string,
     @Body() dto: JoinSessionDto
   ): SessionParticipantResponseDto {
-    const result = this.sessionsService.joinSession(code, dto.name);
+    const result = this.sessionsService.joinSession(code, dto.name, dto.groupId);
     this.sessionsGateway.emitSessionUpdated(result.session.code, result.session);
     return result;
+  }
+
+  @Post(':code/groups/join')
+  @ApiOperation({ summary: 'Assign a participant to an existing group' })
+  @ApiParam({ name: 'code', example: 'ABC123' })
+  @ApiOkResponse({ type: SessionViewDto })
+  joinGroup(@Param('code') code: string, @Body() dto: JoinGroupDto): SessionViewDto {
+    const session = this.sessionsService.joinGroup(code, dto.participantId, dto.groupId);
+    this.sessionsGateway.emitSessionUpdated(session.code, session);
+    return session;
   }
 
   @Get(':code')
@@ -83,8 +95,8 @@ export class SessionsController {
   @ApiOperation({ summary: 'Reveal votes for the current round' })
   @ApiParam({ name: 'code', example: 'ABC123' })
   @ApiOkResponse({ type: SessionViewDto })
-  reveal(@Param('code') code: string, @Body() dto: OwnerActionDto): SessionViewDto {
-    const session = this.sessionsService.reveal(code, dto.participantId);
+  reveal(@Param('code') code: string, @Body() dto: RevealActionDto): SessionViewDto {
+    const session = this.sessionsService.reveal(code, dto.participantId, dto.moderatorToken);
     this.sessionsGateway.emitSessionUpdated(session.code, session);
     return session;
   }

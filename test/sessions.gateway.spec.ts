@@ -23,7 +23,9 @@ describe('SessionsGateway', () => {
       revealed: false,
       deck: ['1', '2', '3'],
       createdAt: new Date().toISOString(),
-      participants: []
+      groups: [],
+      participants: [],
+      groupResults: []
     });
 
     expect(to).toHaveBeenCalledWith('ABC123');

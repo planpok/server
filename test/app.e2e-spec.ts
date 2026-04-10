@@ -251,14 +251,17 @@ describe('Sessions API (e2e)', () => {
   it('walks through the full session lifecycle over HTTP', async () => {
     const createdResponse = await dispatchJson(app, 'POST', '/api/sessions', {
       name: 'Alice',
-      deck: ['1', '2', '3']
+      deck: ['1', '2', '3'],
+      groups: ['Backend']
     });
 
     expect(createdResponse.statusCode).toBe(201);
     const created = createdResponse.body as {
       participantId: string;
-      session: { code: string };
+      session: { code: string; groups: Array<{ id: string; name: string }> };
     };
+
+    const backendGroupId = created.session.groups[0].id;
 
     const joinedResponse = await dispatchJson(app, 'POST', `/api/sessions/${created.session.code}/join`, {
       name: 'Bob'
@@ -275,6 +278,18 @@ describe('Sessions API (e2e)', () => {
     });
 
     expect(voteResponse.statusCode).toBe(201);
+
+    const joinGroupResponse = await dispatchJson(
+      app,
+      'POST',
+      `/api/sessions/${created.session.code}/groups/join`,
+      {
+        participantId: joined.participantId,
+        groupId: backendGroupId
+      }
+    );
+
+    expect(joinGroupResponse.statusCode).toBe(201);
 
     const maskedView = await dispatchJson(app, 'GET', `/api/sessions/${created.session.code}`);
 
@@ -308,6 +323,36 @@ describe('Sessions API (e2e)', () => {
           id: created.participantId,
           hasVoted: true,
           vote: '2'
+        })
+      ])
+    );
+    expect(
+      (
+        revealedResponse.body as {
+          groupResults: Array<{
+            groupName: string;
+            participantCount: number;
+            votedCount: number;
+            trendingCard: string | null;
+            voteCounts: Record<string, number>;
+          }>;
+        }
+      ).groupResults
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          groupName: 'Backend',
+          participantCount: 1,
+          votedCount: 0,
+          voteCounts: {},
+          trendingCard: null
+        }),
+        expect.objectContaining({
+          groupName: 'Ungrouped',
+          participantCount: 1,
+          votedCount: 1,
+          voteCounts: { '2': 1 },
+          trendingCard: '2'
         })
       ])
     );

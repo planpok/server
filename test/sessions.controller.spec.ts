@@ -36,6 +36,28 @@ describe('SessionsController', () => {
     expect(emitUpdatedSpy).toHaveBeenCalledTimes(2);
   });
 
+  it('assigns a participant to a group through controller endpoint', () => {
+    const emitUpdatedSpy = jest.spyOn(gateway, 'emitSessionUpdated').mockImplementation();
+
+    const created = controller.create({
+      name: 'Alice',
+      deck: ['1', '2', '3'],
+      groups: ['Backend']
+    });
+    const joined = controller.join(created.session.code, {
+      name: 'Bob'
+    });
+
+    const updated = controller.joinGroup(created.session.code, {
+      participantId: joined.participantId,
+      groupId: created.session.groups[0].id
+    });
+    const bob = updated.participants.find((participant) => participant.id === joined.participantId);
+
+    expect(bob?.groupName).toBe('Backend');
+    expect(emitUpdatedSpy).toHaveBeenCalledTimes(3);
+  });
+
   it('reads session state with masked votes', () => {
     jest.spyOn(gateway, 'emitSessionUpdated').mockImplementation();
 
