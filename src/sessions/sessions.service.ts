@@ -43,7 +43,12 @@ export class SessionsService implements OnModuleDestroy {
     this.dbClosed = true;
   }
 
-  createSession(name: string, deck: string[], groups: string[] = []): SessionParticipantResponseDto {
+  createSession(
+    name: string,
+    deck: string[],
+    groups: string[] = [],
+    ownerGroupName?: string
+  ): SessionParticipantResponseDto {
     const normalizedName = this.normalizeName(name);
     const normalizedDeck = this.normalizeDeck(deck);
     const normalizedGroups = this.normalizeGroups(groups);
@@ -52,19 +57,20 @@ export class SessionsService implements OnModuleDestroy {
     const createdAt = new Date().toISOString();
     const moderatorToken = this.generateId('mod');
 
-    const owner: Participant = {
-      id: participantId,
-      name: normalizedName,
-      vote: null,
-      joinedAt: createdAt,
-      groupId: null
-    };
-
     const sessionGroups: SessionGroup[] = normalizedGroups.map((groupName) => ({
       id: this.generateId('group'),
       name: groupName,
       createdAt
     }));
+    const ownerGroupId = this.resolveOwnerGroupId(sessionGroups, ownerGroupName);
+
+    const owner: Participant = {
+      id: participantId,
+      name: normalizedName,
+      vote: null,
+      joinedAt: createdAt,
+      groupId: ownerGroupId
+    };
 
     const session: Session = {
       code,
@@ -265,6 +271,22 @@ export class SessionsService implements OnModuleDestroy {
   private normalizeGroups(groups: string[]): string[] {
     const normalized = groups.map((group) => group.trim()).filter((group) => group.length > 0);
     return Array.from(new Set(normalized));
+  }
+
+  private resolveOwnerGroupId(groups: SessionGroup[], ownerGroupName?: string): string | null {
+    const normalizedOwnerGroupName = ownerGroupName?.trim();
+
+    if (!normalizedOwnerGroupName) {
+      return null;
+    }
+
+    const ownerGroup = groups.find((group) => group.name === normalizedOwnerGroupName);
+
+    if (!ownerGroup) {
+      throw new BadRequestException('Owner group must be included in session groups.');
+    }
+
+    return ownerGroup.id;
   }
 
   private isModeratorTokenValid(session: Session, token?: string): boolean {

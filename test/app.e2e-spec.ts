@@ -409,4 +409,50 @@ describe('Sessions API (e2e)', () => {
       ])
     );
   });
+
+  it('accepts ownerGroupName when creating a grouped session', async () => {
+    const response = await dispatchJson(app, 'POST', '/api/sessions', {
+      name: 'Maxime',
+      deck: ['1', '2', '3', '5', '8', '13', '21', '?'],
+      groups: ['iOS', 'Android'],
+      ownerGroupName: 'iOS'
+    });
+
+    expect(response.statusCode).toBe(201);
+    expect(
+      (
+        response.body as {
+          participantId: string;
+          session: {
+            participants: Array<{ id: string; groupName: string | null }>;
+            groupResults: Array<{ groupName: string; participantCount: number }>;
+          };
+        }
+      ).session.participants
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          groupName: 'iOS'
+        })
+      ])
+    );
+    expect(
+      (
+        response.body as {
+          session: { groupResults: Array<{ groupName: string; participantCount: number }> };
+        }
+      ).session.groupResults
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          groupName: 'iOS',
+          participantCount: 1
+        }),
+        expect.objectContaining({
+          groupName: 'Android',
+          participantCount: 0
+        })
+      ])
+    );
+  });
 });

@@ -42,11 +42,15 @@ describe('SessionsController', () => {
     const created = controller.create({
       name: 'Alice',
       deck: ['1', '2', '3'],
-      groups: ['Backend']
+      groups: ['Backend'],
+      ownerGroupName: 'Backend'
     });
     const joined = controller.join(created.session.code, {
       name: 'Bob'
     });
+    const owner = created.session.participants.find(
+      (participant) => participant.id === created.participantId
+    );
 
     const updated = controller.joinGroup(created.session.code, {
       participantId: joined.participantId,
@@ -54,6 +58,7 @@ describe('SessionsController', () => {
     });
     const bob = updated.participants.find((participant) => participant.id === joined.participantId);
 
+    expect(owner?.groupName).toBe('Backend');
     expect(bob?.groupName).toBe('Backend');
     expect(emitUpdatedSpy).toHaveBeenCalledTimes(3);
   });

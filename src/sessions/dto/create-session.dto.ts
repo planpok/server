@@ -33,4 +33,11 @@ export class CreateSessionDto {
   @IsArray()
   @IsString({ each: true })
   groups?: string[];
+
+  @ApiProperty({ example: 'Frontend', required: false })
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(50)
+  ownerGroupName?: string;
 }

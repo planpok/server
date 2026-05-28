@@ -43,7 +43,12 @@ export class SessionsController {
   @ApiCreatedResponse({ type: SessionParticipantResponseDto })
   @ApiBadRequestResponse({ description: 'Invalid participant name or deck.' })
   create(@Body() dto: CreateSessionDto): SessionParticipantResponseDto {
-    const result = this.sessionsService.createSession(dto.name, dto.deck, dto.groups ?? []);
+    const result = this.sessionsService.createSession(
+      dto.name,
+      dto.deck,
+      dto.groups ?? [],
+      dto.ownerGroupName
+    );
     this.sessionsGateway.emitSessionUpdated(result.session.code, result.session);
     return result;
   }

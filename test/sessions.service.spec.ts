@@ -56,6 +56,29 @@ describe('SessionsService', () => {
     );
   });
 
+  it('assigns the owner to a requested group by name when creating a session', () => {
+    const result = service.createSession('Alice', ['1', '2', '3'], ['Backend', 'Frontend'], ' Frontend ');
+    const owner = result.session.participants.find((participant) => participant.id === result.participantId);
+    const frontendGroup = result.session.groups.find((group) => group.name === 'Frontend');
+
+    expect(owner?.groupId).toBe(frontendGroup?.id);
+    expect(owner?.groupName).toBe('Frontend');
+    expect(result.session.groupResults).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          groupName: 'Frontend',
+          participantCount: 1
+        })
+      ])
+    );
+  });
+
+  it('rejects an owner group that is not declared on the session', () => {
+    expect(() =>
+      service.createSession('Alice', ['1', '2', '3'], ['Backend'], 'Frontend')
+    ).toThrow('Owner group must be included in session groups.');
+  });
+
   it('auto-renames duplicate participant names', () => {
     const created = service.createSession('Alice', ['1', '2', '3']);
     const joined = service.joinSession(created.session.code, 'Alice');
