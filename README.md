@@ -35,6 +35,7 @@ PORT=3000
 
 HTTP routes are exposed under the global `/api` prefix.
 Swagger documentation is available at `/api/docs`.
+The roulette MCP endpoint is exposed at `/api/mcp/roulette`.
 
 ## Run
 
@@ -127,6 +128,19 @@ WebSocket (Socket.IO):
 - Outgoing event: `session.subscribed`
 - Broadcast: `session.updated`
 - Broadcast: `session.deleted`
+
+MCP roulette (Streamable HTTP):
+
+- Endpoint: `POST /api/mcp/roulette`
+- Transport: stateless JSON response mode
+- Tools:
+  - `roulette_create_session`
+  - `roulette_get_session`
+  - `roulette_add_value`
+  - `roulette_remove_value`
+  - `roulette_draw`
+  - `roulette_remove_last_draw`
+  - `roulette_keep_last_draw`
 
 ## Docker
 

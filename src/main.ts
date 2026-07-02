@@ -20,7 +20,7 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Poker Planning API')
-    .setDescription('REST and WebSocket API for poker planning sessions.')
+    .setDescription('REST, WebSocket and MCP API for poker planning sessions.')
     .setVersion('1.0.0')
     .build();
 
