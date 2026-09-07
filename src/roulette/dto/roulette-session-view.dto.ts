@@ -4,6 +4,9 @@ export class RouletteLastDrawViewDto {
   @ApiProperty()
   value!: string;
 
+  @ApiProperty({ type: [String] })
+  values!: string[];
+
   @ApiProperty()
   drawnAt!: string;
 

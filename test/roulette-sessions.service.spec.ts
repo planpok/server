@@ -86,6 +86,7 @@ describe('RouletteSessionsService', () => {
     expect(drawn.lastDraw).toEqual(
       expect.objectContaining({
         value: 'Alice',
+        values: ['Alice'],
         removable: true
       })
     );
@@ -100,6 +101,24 @@ describe('RouletteSessionsService', () => {
     );
   });
 
+  it('draws the requested number of unique values', () => {
+    const created = service.createSession(['Alice', 'Bob', 'Charlie', 'Dana', 'Eve']);
+
+    const drawn = service.draw(created.session.code, created.ownerToken, 5);
+
+    expect(drawn.lastDraw?.values).toHaveLength(5);
+    expect(new Set(drawn.lastDraw?.values).size).toBe(5);
+    expect(drawn.lastDraw?.values).toEqual(expect.arrayContaining(created.session.values));
+  });
+
+  it('rejects drawing more values than are available', () => {
+    const created = service.createSession(['Alice']);
+
+    expect(() => service.draw(created.session.code, created.ownerToken, 2)).toThrow(
+      'Cannot draw more values than are available in this roulette session.'
+    );
+  });
+
   it('removes the latest draw only once', () => {
     const created = service.createSession(['Alice']);
     service.draw(created.session.code, created.ownerToken);
@@ -110,12 +129,24 @@ describe('RouletteSessionsService', () => {
     expect(updated.lastDraw).toEqual(
       expect.objectContaining({
         value: 'Alice',
+        values: ['Alice'],
         removable: false
       })
     );
     expect(() => service.removeLastDraw(created.session.code, created.ownerToken)).toThrow(
       'Last roulette draw can no longer be removed.'
     );
+  });
+
+  it('removes every value from a multiple draw', () => {
+    const created = service.createSession(['Alice', 'Bob', 'Charlie']);
+    const drawn = service.draw(created.session.code, created.ownerToken, 2);
+
+    const updated = service.removeLastDraw(created.session.code, created.ownerToken);
+
+    expect(updated.values).toHaveLength(1);
+    expect(updated.values).not.toEqual(expect.arrayContaining(drawn.lastDraw!.values));
+    expect(updated.lastDraw?.removable).toBe(false);
   });
 
   it('keeps the latest draw and disables removal', () => {

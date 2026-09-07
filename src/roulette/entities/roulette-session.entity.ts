@@ -1,5 +1,6 @@
 export interface RouletteLastDraw {
   value: string;
+  values: string[];
   drawnAt: string;
   removable: boolean;
 }

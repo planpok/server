@@ -12,6 +12,7 @@ import {
 
 import { AddRouletteValueDto } from './dto/add-roulette-value.dto';
 import { CreateRouletteSessionDto } from './dto/create-roulette-session.dto';
+import { DrawRouletteValuesDto } from './dto/draw-roulette-values.dto';
 import { RouletteOwnerActionDto } from './dto/roulette-owner-action.dto';
 import {
   RouletteSessionOwnerResponseDto,
@@ -64,13 +65,13 @@ export class RouletteSessionsController {
   }
 
   @Post(':code/draw')
-  @ApiOperation({ summary: 'Draw a random value from a roulette session' })
+  @ApiOperation({ summary: 'Draw one or more random values from a roulette session' })
   @ApiParam({ name: 'code', example: 'ABC123' })
   @ApiOkResponse({ type: RouletteSessionViewDto })
   @ApiBadRequestResponse({ description: 'The roulette session has no values.' })
   @ApiForbiddenResponse({ description: 'Only the owner can draw.' })
-  draw(@Param('code') code: string, @Body() dto: RouletteOwnerActionDto): RouletteSessionViewDto {
-    return this.rouletteSessionsService.draw(code, dto.ownerToken);
+  draw(@Param('code') code: string, @Body() dto: DrawRouletteValuesDto): RouletteSessionViewDto {
+    return this.rouletteSessionsService.draw(code, dto.ownerToken, dto.count);
   }
 
   @Post(':code/draw/remove')

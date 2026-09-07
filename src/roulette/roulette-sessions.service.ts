@@ -91,7 +91,7 @@ export class RouletteSessionsService implements OnModuleDestroy {
 
     session.values = session.values.filter((entry) => entry !== normalizedValue);
 
-    if (session.lastDraw?.value === normalizedValue) {
+    if (session.lastDraw?.values.includes(normalizedValue)) {
       session.lastDraw = {
         ...session.lastDraw,
         removable: false
@@ -103,7 +103,7 @@ export class RouletteSessionsService implements OnModuleDestroy {
     return this.toSessionView(session);
   }
 
-  draw(code: string, ownerToken: string): RouletteSessionViewDto {
+  draw(code: string, ownerToken: string, count = 1): RouletteSessionViewDto {
     const session = this.getSessionOrThrow(code);
     this.assertOwner(session, ownerToken);
 
@@ -111,8 +111,23 @@ export class RouletteSessionsService implements OnModuleDestroy {
       throw new BadRequestException('Cannot draw from an empty roulette session.');
     }
 
+    if (count > session.values.length) {
+      throw new BadRequestException('Cannot draw more values than are available in this roulette session.');
+    }
+
+    const drawnValues = [...session.values];
+
+    for (let index = 0; index < count; index += 1) {
+      const selectedIndex = randomInt(index, drawnValues.length);
+      [drawnValues[index], drawnValues[selectedIndex]] = [
+        drawnValues[selectedIndex],
+        drawnValues[index]
+      ];
+    }
+
     session.lastDraw = {
-      value: session.values[randomInt(session.values.length)],
+      value: drawnValues[0],
+      values: drawnValues.slice(0, count),
       drawnAt: new Date().toISOString(),
       removable: true
     };
@@ -129,11 +144,14 @@ export class RouletteSessionsService implements OnModuleDestroy {
       throw new BadRequestException('No roulette draw is available to remove.');
     }
 
-    if (!session.lastDraw.removable || !session.values.includes(session.lastDraw.value)) {
+    if (
+      !session.lastDraw.removable ||
+      !session.lastDraw.values.every((value) => session.values.includes(value))
+    ) {
       throw new BadRequestException('Last roulette draw can no longer be removed.');
     }
 
-    session.values = session.values.filter((entry) => entry !== session.lastDraw?.value);
+    session.values = session.values.filter((entry) => !session.lastDraw?.values.includes(entry));
     session.lastDraw = {
       ...session.lastDraw,
       removable: false
@@ -204,7 +222,9 @@ export class RouletteSessionsService implements OnModuleDestroy {
     return {
       code: session.code,
       values: [...session.values],
-      lastDraw: session.lastDraw ? { ...session.lastDraw } : null,
+      lastDraw: session.lastDraw
+        ? { ...session.lastDraw, values: [...session.lastDraw.values] }
+        : null,
       createdAt: session.createdAt,
       updatedAt: session.updatedAt
     };
@@ -290,7 +310,12 @@ export class RouletteSessionsService implements OnModuleDestroy {
       code: (session.code ?? fallbackCode).toUpperCase(),
       ownerTokenHash: session.ownerTokenHash ?? '',
       values: this.normalizeValues(session.values ?? []),
-      lastDraw: session.lastDraw ?? null,
+      lastDraw: session.lastDraw
+        ? {
+            ...session.lastDraw,
+            values: session.lastDraw.values ?? [session.lastDraw.value]
+          }
+        : null,
       createdAt: session.createdAt ?? now,
       updatedAt: session.updatedAt ?? session.createdAt ?? now
     };

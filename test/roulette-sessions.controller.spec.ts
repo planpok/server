@@ -42,6 +42,7 @@ describe('RouletteSessionsController', () => {
     });
 
     expect(drawn.lastDraw?.value).toBeDefined();
+    expect(drawn.lastDraw?.values).toHaveLength(1);
 
     const kept = controller.keepLastDraw(created.session.code, {
       ownerToken: created.ownerToken
@@ -71,6 +72,20 @@ describe('RouletteSessionsController', () => {
 
     expect(updated.values).toEqual([]);
     expect(updated.lastDraw?.removable).toBe(false);
+  });
+
+  it('draws multiple unique values through controller endpoint', () => {
+    const created = controller.create({
+      values: ['Alice', 'Bob', 'Charlie']
+    });
+
+    const drawn = controller.draw(created.session.code, {
+      ownerToken: created.ownerToken,
+      count: 3
+    });
+
+    expect(drawn.lastDraw?.values).toHaveLength(3);
+    expect(new Set(drawn.lastDraw?.values).size).toBe(3);
   });
 
   it('throws expected domain errors', () => {
