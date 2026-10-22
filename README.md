@@ -4,7 +4,7 @@ Backend API for the Poker Planning project, built with NestJS and TypeScript.
 
 ## Prerequisites
 
-- Node.js 22 (recommended, aligned with GitHub Actions CI)
+- Node.js 24.22.1 LTS (use `nvm use`; aligned with CI and Docker)
 - npm 10+
 
 ## Installation

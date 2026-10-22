@@ -17,12 +17,18 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Audit dependencies
+        run: npm audit
+
       - name: Run tests
         run: npm test -- --ci
+
+      - name: Build
+        run: npm run build
