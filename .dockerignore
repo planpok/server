@@ -3,3 +3,10 @@ dist
 npm-debug.log
 coverage
 .DS_Store
+.git
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.npmrc
